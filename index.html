@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCTV VMS — Self-hosted video surveillance for Windows</title>
+<meta name="description" content="Turn any Windows PC into a full video management system: live camera view, motion events, recordings and multi-site management. No cloud, no monthly fees. Free for 1 camera, $149–$249 one-time for larger systems.">
+<meta property="og:title" content="CCTV VMS — Your cameras. Your PC. Your data.">
+<meta property="og:description" content="Professional self-hosted video surveillance for Windows 10/11. 30-day free trial, no card required.">
+<meta property="og:image" content="shots/dashboard.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.ico">
+<style>
+  :root {
+    --bg: #0a0f14;
+    --bg-soft: #0e151d;
+    --surface: #121a23;
+    --surface-2: #17212c;
+    --border: #223040;
+    --text: #dbe6ef;
+    --muted: #8fa4b8;
+    --accent: #2ee6a8;
+    --accent-dim: #1fb886;
+    --accent-glow: rgba(46, 230, 168, 0.14);
+    --danger: #ff6b6b;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10, 15, 20, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--text); }
+  .brand:hover { text-decoration: none; }
+  .brand img { width: 26px; height: 26px; }
+  .brand .tag { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; }
+  .nav-links { display: flex; gap: 26px; align-items: center; }
+  .nav-links a { color: var(--muted); font-size: 14.5px; }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-block; padding: 12px 26px; border-radius: 8px;
+    font-weight: 600; font-size: 15px; cursor: pointer; border: 1px solid transparent;
+    transition: transform 0.06s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--accent); color: #04120c;
+    box-shadow: 0 4px 24px var(--accent-glow);
+  }
+  .btn-primary:hover { background: #45f0b6; }
+  .btn-outline { border-color: var(--border); color: var(--text); background: var(--surface); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: 8px 16px; font-size: 13.5px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 84px 0 48px; text-align: center; }
+  .hero .kicker {
+    display: inline-block; padding: 5px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--accent); font-size: 12.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .hero h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.15; font-weight: 800; letter-spacing: -0.5px; }
+  .hero h1 .hl { color: var(--accent); }
+  .hero p.sub { max-width: 660px; margin: 18px auto 0; color: var(--muted); font-size: 17.5px; }
+  .hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+  .hero-note { margin-top: 14px; color: var(--muted); font-size: 13.5px; }
+
+  .hero-shot { margin: 52px auto 0; max-width: 940px; }
+  .shot-frame {
+    border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(46, 230, 168, 0.06);
+    background: var(--surface);
+  }
+  .shot-frame img { display: block; width: 100%; height: auto; }
+  .shot-caption { color: var(--muted); font-size: 13px; margin-top: 10px; text-align: center; }
+
+  /* ---------- strip ---------- */
+  .strip { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-soft); margin-top: 72px; }
+  .strip-inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .strip-item { padding: 26px 20px; text-align: center; border-right: 1px solid var(--border); }
+  .strip-item:last-child { border-right: none; }
+  .strip-item .v { font-size: 21px; font-weight: 800; color: var(--accent); }
+  .strip-item .k { font-size: 13px; color: var(--muted); }
+
+  /* ---------- sections ---------- */
+  section { padding: 76px 0; }
+  .sec-head { text-align: center; max-width: 620px; margin: 0 auto 44px; }
+  .sec-head h2 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; letter-spacing: -0.3px; }
+  .sec-head p { color: var(--muted); margin-top: 10px; font-size: 16px; }
+
+  /* features */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px;
+  }
+  .card .icon { font-size: 24px; margin-bottom: 12px; }
+  .card h3 { font-size: 16.5px; margin-bottom: 6px; }
+  .card p { color: var(--muted); font-size: 14.5px; }
+
+  /* screens */
+  .screens { display: grid; grid-template-columns: 1.25fr 1fr; gap: 22px; align-items: start; }
+
+  /* pricing */
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+  .plan {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px 24px; display: flex; flex-direction: column; position: relative;
+  }
+  .plan.featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 14px 50px var(--accent-glow); }
+  .plan .badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #04120c; font-size: 11.5px; font-weight: 700;
+    padding: 3px 12px; border-radius: 999px; letter-spacing: 0.6px; text-transform: uppercase; white-space: nowrap;
+  }
+  .plan h3 { font-size: 18px; }
+  .plan .price { font-size: 38px; font-weight: 800; margin: 10px 0 2px; letter-spacing: -1px; }
+  .plan .price small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .plan .cams { color: var(--accent); font-weight: 600; font-size: 14.5px; margin-bottom: 14px; }
+  .plan ul { list-style: none; margin: 0 0 22px; flex: 1; }
+  .plan li { padding: 6px 0 6px 24px; position: relative; color: var(--muted); font-size: 14.5px; }
+  .plan li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  .plan .btn { text-align: center; }
+  .trial-note {
+    margin-top: 22px; text-align: center; color: var(--muted); font-size: 14.5px;
+    background: var(--surface-2); border: 1px dashed var(--border); border-radius: var(--radius); padding: 16px 20px;
+  }
+  .trial-note strong { color: var(--text); }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; counter-reset: step; }
+  .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .step .n {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--accent-glow); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; margin-bottom: 12px;
+    border: 1px solid rgba(46, 230, 168, 0.35);
+  }
+  .step h3 { font-size: 15px; margin-bottom: 4px; }
+  .step p { color: var(--muted); font-size: 13.5px; }
+
+  /* faq */
+  .faq { max-width: 760px; margin: 0 auto; }
+  details {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0 20px; margin-bottom: 12px;
+  }
+  summary { cursor: pointer; font-weight: 600; padding: 16px 0; font-size: 15.5px; list-style: none; position: relative; padding-right: 28px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; position: absolute; right: 0; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 20px; font-weight: 400; }
+  details[open] summary::after { content: "–"; }
+  details p { color: var(--muted); font-size: 14.5px; padding-bottom: 16px; }
+
+  /* final cta */
+  .final { text-align: center; background: var(--bg-soft); border-top: 1px solid var(--border); }
+  .final h2 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; }
+  .final p { color: var(--muted); margin: 10px 0 26px; }
+
+  footer { border-top: 1px solid var(--border); padding: 28px 0; color: var(--muted); font-size: 13.5px; }
+  .foot-inner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+  @media (max-width: 900px) {
+    .features, .plans { grid-template-columns: 1fr 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .strip-inner { grid-template-columns: 1fr 1fr; }
+    .strip-item:nth-child(2) { border-right: none; }
+    .strip-item:nth-child(1), .strip-item:nth-child(2) { border-bottom: 1px solid var(--border); }
+    .screens { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .features, .plans, .steps { grid-template-columns: 1fr; }
+    .nav-links a:not(.btn) { display: none; }
+    section { padding: 56px 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="#">
+      <img src="favicon.ico" alt="CCTV VMS logo">
+      CCTV&nbsp;VMS <span class="tag">Eagle's Eye</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#screens">Screens</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <!-- TODO(DOWNLOAD): replace with the hosted installer link -->
+      <a class="btn btn-primary btn-sm" href="DOWNLOAD_URL">Download</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">Self-hosted video surveillance · Windows 10 &amp; 11</span>
+    <h1>Your cameras. Your PC.<br><span class="hl">Your data.</span></h1>
+    <p class="sub">
+      CCTV VMS turns any Windows computer into a full video management system —
+      live view, motion events, recordings and multi-site management for your
+      RTSP/ONVIF cameras. No cloud, no monthly fees, works with the internet down.
+    </p>
+    <div class="hero-ctas">
+      <!-- TODO(DOWNLOAD): replace with the hosted installer link -->
+      <a class="btn btn-primary" href="DOWNLOAD_URL">Download installer — 66 MB</a>
+      <a class="btn btn-outline" href="mailto:tinomupe69@gmail.com?subject=30-day%20trial%20request">Start 30-day free trial</a>
+    </div>
+    <p class="hero-note">Full Pro features for 30 days, no card required. After the trial the system keeps working — free, 1 camera, forever.</p>
+
+    <div class="hero-shot">
+      <div class="shot-frame">
+        <img src="shots/login.png" alt="CCTV VMS login screen — dark command-center dashboard behind the sign-in panel" loading="lazy">
+      </div>
+      <p class="shot-caption">Sign-in screen of the installed app — a branded, password-protected command center on your own machine.</p>
+    </div>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="wrap strip-inner">
+    <div class="strip-item"><div class="v">2 min</div><div class="k">from installer to first camera</div></div>
+    <div class="strip-item"><div class="v">No admin</div><div class="k">per-user install, no rights needed</div></div>
+    <div class="strip-item"><div class="v">Offline</div><div class="k">cameras &amp; recordings work with no internet</div></div>
+    <div class="strip-item"><div class="v">Never bricks</div><div class="k">expired license → free Lite, data kept</div></div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Everything a small CCTV system needs</h2>
+      <p>Built for shops, offices, schools, warehouses and homes — real IP cameras, one Windows box, zero subscriptions.</p>
+    </div>
+    <div class="features">
+      <div class="card"><div class="icon">🎥</div><h3>Live view &amp; matrix</h3><p>Watch every camera live in a flexible grid. MJPEG and WebRTC streaming with per-camera start/stop.</p></div>
+      <div class="card"><div class="icon">⚡</div><h3>Motion events</h3><p>An event feed with timestamps and thumbnails so you can review what happened without scrubbing hours of video.</p></div>
+      <div class="card"><div class="icon">💾</div><h3>Recordings</h3><p>Continuous and event-driven recording to disk, with a recordings browser for playback and export.</p></div>
+      <div class="card"><div class="icon">🏢</div><h3>Multi-site</h3><p>Group cameras by site — HQ, shop, warehouse — and manage all of them from one dashboard.</p></div>
+      <div class="card"><div class="icon">👥</div><h3>Users &amp; roles</h3><p>Separate accounts for admins, operators and viewers. First login forces a password change — no default-password holes.</p></div>
+      <div class="card"><div class="icon">🔐</div><h3>Local &amp; private</h3><p>Footage never leaves your network. Licenses activate offline-friendly; the app itself is not phone-home software.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="screens" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>A real product, not a demo</h2>
+      <p>Screenshots from the actual shipped installer — what you see below is what you get on first launch.</p>
+    </div>
+    <div class="screens">
+      <div>
+        <div class="shot-frame"><img src="shots/dashboard.png" alt="CCTV VMS dashboard with a site and camera configured, KPI tiles and live feed panel" loading="lazy"></div>
+        <p class="shot-caption">Dashboard — sites, cameras, recordings and events at a glance; live feed panel with quick stream control.</p>
+      </div>
+      <div>
+        <div class="shot-frame"><img src="shots/password-change.png" alt="Forced password change dialog shown on first login" loading="lazy"></div>
+        <p class="shot-caption">First login forces a password change before anything else is accessible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Simple, one-time pricing</h2>
+      <p>Buy once per site. No subscriptions, no per-camera fees, no cloud plan. Try everything free for 30 days first.</p>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <h3>Lite</h3>
+        <div class="price">Free <small>forever</small></div>
+        <div class="cams">1 camera</div>
+        <ul>
+          <li>Everything unlocked, one camera</li>
+          <li>Live view, events, recordings</li>
+          <li>Never expires</li>
+          <li>No license or account needed</li>
+        </ul>
+        <!-- TODO(DOWNLOAD): replace with the hosted installer link -->
+        <a class="btn btn-outline" href="DOWNLOAD_URL">Download free</a>
+      </div>
+      <div class="plan featured">
+        <span class="badge">Most popular</span>
+        <h3>Standard</h3>
+        <div class="price">$149 <small>/ site, one-time</small></div>
+        <div class="cams">Up to 8 cameras</div>
+        <ul>
+          <li>Multi-site &amp; multi-user</li>
+          <li>Motion events &amp; recordings</li>
+          <li>1-year license, renewable</li>
+          <li>Free upgrades in the year</li>
+        </ul>
+        <a class="btn btn-primary" href="mailto:tinomupe69@gmail.com?subject=License%20order%3A%20Standard%20-%20%24149">Order Standard — $149</a>
+      </div>
+      <div class="plan">
+        <h3>Pro</h3>
+        <div class="price">$249 <small>/ site, one-time</small></div>
+        <div class="cams">Up to 20 cameras</div>
+        <ul>
+          <li>Everything in Standard</li>
+          <li>20-camera capacity</li>
+          <li>1-year license, renewable</li>
+          <li>Perpetual option available</li>
+        </ul>
+        <a class="btn btn-outline" href="mailto:tinomupe69@gmail.com?subject=License%20order%3A%20Pro%20-%20%24249">Order Pro — $249</a>
+      </div>
+    </div>
+    <p class="trial-note">
+      <strong>Try before you buy:</strong> every download runs the full Pro feature set (20 cameras) free for 30 days.
+      When any license expires the system drops to free Lite — it keeps working and keeps your recordings. It never locks you out.
+    </p>
+
+    <div class="sec-head" style="margin-top: 60px; margin-bottom: 24px;">
+      <h2>How buying works</h2>
+      <p>No online checkout — orders run by email. Payment by bank transfer or any other method we agree with you directly.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Order by email</h3><p>Click an Order button above — an email opens with your tier pre-filled. Add your site or company name and camera count.</p></div>
+      <div class="step"><div class="n">2</div><h3>Payment options</h3><p>You get a quick reply with payment options and an invoice — bank transfer details included; ask if you prefer another method.</p></div>
+      <div class="step"><div class="n">3</div><h3>License delivered</h3><p>Once payment clears, your signed license file (.dat) arrives by email with the download link — issued to your order.</p></div>
+      <div class="step"><div class="n">4</div><h3>Activate</h3><p>Settings → License → Activate License → select the file. About two minutes, no account needed.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Running in four steps</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Download</h3><p>One 66 MB installer. No dependencies, no database server, no framework to configure.</p></div>
+      <div class="step"><div class="n">2</div><h3>Install</h3><p>Per-user install — no administrator rights required. A tray icon starts it with Windows.</p></div>
+      <div class="step"><div class="n">3</div><h3>Add cameras</h3><p>Log in, create a site, add cameras by IP with the built-in discovery and RTSP setup wizard.</p></div>
+      <div class="step"><div class="n">4</div><h3>Activate</h3><p>During the trial or after purchase, activate your license file in Settings → License. Takes seconds.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head"><h2>Questions, answered</h2></div>
+    <div class="faq">
+      <details>
+        <summary>How do I pay after ordering?</summary>
+        <p>Orders are handled by email — there's no online checkout. Click an Order button and you'll receive a reply with payment options and an invoice (bank transfer details included; other methods on request). Your signed license file and download link arrive by email once payment clears, usually the same or next business day.</p>
+      </details>
+      <details>
+        <summary>Does it need an internet connection?</summary>
+        <p>No. Once installed, cameras, live view, motion events and recordings work completely offline. You only need internet to download the installer and updates — and for remote viewing, if you set that up yourself on your network.</p>
+      </details>
+      <details>
+        <summary>Which cameras are supported?</summary>
+        <p>Any IP camera that exposes a standard RTSP stream — which covers most brands (Hikvision, Dahua, TP-Link Tapo, Reolink, Ezviz and many others), plus ONVIF-capable devices. Old analog cameras can be used through any RTSP-capable DVR/NVR.</p>
+      </details>
+      <details>
+        <summary>What happens when the trial or license expires?</summary>
+        <p>The system switches to the free Lite edition: one camera, permanently, with all your data and recordings intact. Activate a license at any time to restore full capacity — nothing is deleted and nothing is bricked.</p>
+      </details>
+      <details>
+        <summary>Can I move my license to a new computer?</summary>
+        <p>Yes. Licenses can be re-issued for a new machine — contact support with your order details and you'll receive a fresh activation file.</p>
+      </details>
+      <details>
+        <summary>What are the system requirements?</summary>
+        <p>Windows 10 or 11 (64-bit), a few hundred megabytes of disk space for the app, plus storage for recordings. Any PC that can run a modern browser can run CCTV VMS.</p>
+      </details>
+      <details>
+        <summary>Is there a subscription or per-camera fee?</summary>
+        <p>No. Pricing is one-time per site. The 1-year license includes upgrades and can be renewed — but the Lite edition is free forever and paid licenses can be issued as perpetual.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>See it on your own cameras tonight</h2>
+    <p>Download, install, add a camera — the 30-day trial starts the moment you launch.</p>
+    <div class="hero-ctas">
+      <!-- TODO(DOWNLOAD): replace with the hosted installer link -->
+      <a class="btn btn-primary" href="DOWNLOAD_URL">Download installer</a>
+      <a class="btn btn-outline" href="mailto:tinomupe69@gmail.com?subject=CCTV%20VMS%20question">Email a question first</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div>© 2026 CCTV VMS · Eagle's Eye Command Center. All rights reserved.</div>
+    <div>Support: <a href="mailto:tinomupe69@gmail.com">tinomupe69@gmail.com</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
