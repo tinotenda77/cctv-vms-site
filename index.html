@@ -361,6 +361,12 @@
     <div class="sec-head"><h2>Questions, answered</h2></div>
     <div class="faq">
       <details>
+        <summary>Windows Defender or my antivirus flagged the installer — is it safe?</summary>
+        <p><strong>It's a known false positive, not a virus.</strong> The installer is packaged with PyInstaller (the standard Python packaging tool), and unsigned apps built with it are routinely mis-detected by antivirus heuristics — even Microsoft's own open-source projects have received the same detection label. There is no malware in this download.</p>
+        <p><strong>Verify it yourself:</strong> compare the SHA-256 of the file you downloaded with the checksum shown at the bottom of this page. If they match, you have the exact file that was built and published here.</p>
+        <p><strong>Windows Defender quarantined it?</strong> Open <em>Windows Security → Virus &amp; threat protection → Protection history</em>, find the entry, then <em>Actions → Restore</em> and <em>Allow on device</em>. <strong>SmartScreen says "Windows protected your PC"?</strong> Click <em>More info → Run anyway</em>. Another antivirus removed it? Add an exclusion for the install folder — or <a href="mailto:tinomupe69@gmail.com?subject=Antivirus%20false%20positive%20help">email me</a> and I'll help you get it whitelisted.</p>
+      </details>
+      <details>
         <summary>How do I pay after ordering?</summary>
         <p>Orders are handled by email — there's no online checkout. Click an Order button and you'll receive a reply with payment options and an invoice (bank transfer details included; other methods on request). Your signed license file and download link arrive by email once payment clears, usually the same or next business day.</p>
       </details>
@@ -407,6 +413,9 @@
   <div class="wrap foot-inner">
     <div>© 2026 CCTV VMS · Eagle's Eye Command Center. All rights reserved.</div>
     <div>Support: <a href="mailto:tinomupe69@gmail.com">tinomupe69@gmail.com</a></div>
+    <div style="width: 100%; font-family: Consolas, 'Courier New', monospace; font-size: 12px; word-break: break-all; padding-top: 8px; border-top: 1px dashed var(--border); margin-top: 8px;">
+      Installer SHA-256 (v1.0.0): 832CC141C6F61E3CFCAD3879DED75F930EC2E385FF92B9226F91815C707929FC &nbsp;·&nbsp; <a href="#faq">Why does my antivirus flag it? See FAQ</a>
+    </div>
   </div>
 </footer>
 
